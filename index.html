@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- ═════════════════════════════════════════════════════════════════
+       META & SEO
+  ══════════════════════════════════════════════════════════════════ -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <title>Advanced Beam Solver · Real-World Structural Engineering Problem Set</title>
+  <meta name="description"
+        content="Advanced Beam Solver Portfolio by Venkata Subramanian M. Comprehensive structural engineering problem set covering Variable EI Stepped Shafts, Elastic Springs, Support Settlement, Thermal Gradients, Fabrication Prestrains, and Combined Axial + Bending." />
+
+  <!-- Open Graph -->
+  <meta property="og:title"       content="Advanced Beam Solver · Engineering Problem Set" />
+  <meta property="og:description" content="Real-world structural engineering problem set: Stepped shafts, elastic springs, settlement, thermal gradients, and combined axial-bending." />
+  <meta property="og:type"        content="website" />
+
+  <!-- Google Fonts: Inter, Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── 1. Tokens & Color System ────────────────────────────── */
+    :root {
+      --bg:             #060812;
+      --bg-alt:         #0a0f1d;
+      --surface:        #0e1526;
+      --surface-card:   #121b30;
+      --surface-hover:  #17233e;
+      --border:         rgba(96, 165, 250, 0.14);
+      --border-bright:  rgba(96, 165, 250, 0.40);
+      
+      --accent:         #3b82f6;
+      --accent-cyan:    #00f0ff;
+      --accent-emerald: #10b981;
+      --accent-amber:   #f59e0b;
+      --accent-purple:  #a855f7;
+      --accent-rose:    #f43f5e;
+      
+      --glow-blue:      rgba(59, 130, 246, 0.28);
+      --glow-cyan:      rgba(0, 240, 255, 0.25);
+      
+      --text:           #f3f6ff;
+      --text-dim:       #c2d1e8;
+      --muted:          #8195b3;
+      
+      --radius-sm:      8px;
+      --radius-md:      14px;
+      --radius-lg:      22px;
+      --transition:     0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --max-w:          1160px;
+    }
+
+    /* ── 2. Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.65;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── 3. Engineering Grid Background ──────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59, 130, 246, 0.038) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59, 130, 246, 0.038) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── 4. Ambient Floating Glow Orbs ───────────────────────── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+      animation: orb-float 16s ease-in-out infinite alternate;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, #3b82f6 0%, #1e1b4b 70%, transparent 80%);
+      top: -200px; left: -150px;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #00f0ff 0%, #0369a1 60%, transparent 80%);
+      top: 40%; right: -180px;
+      animation-delay: -6s;
+    }
+    .orb-3 {
+      width: 550px; height: 550px;
+      background: radial-gradient(circle, #a855f7 0%, #4c1d95 65%, transparent 80%);
+      bottom: -150px; left: 20%;
+      animation-delay: -11s;
+    }
+    @keyframes orb-float {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(35px, 28px) scale(1.08); }
+    }
+
+    /* ── 5. Page Wrapper ─────────────────────────────────────── */
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ── 6. Header / Hero ────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 68px 0 44px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 6px 18px;
+      border-radius: 999px;
+      border: 1px solid var(--border-bright);
+      background: rgba(59, 130, 246, 0.10);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+      margin-bottom: 24px;
+      animation: fadeInDown 0.6s ease both;
+    }
+    .badge-dot {
+      width: 7px; height: 7px;
+      background: var(--accent-cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-cyan);
+      animation: pulse-dot 2s infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .hero-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(2.2rem, 5.8vw, 4.0rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      background: linear-gradient(135deg, #ffffff 20%, #93c5fd 60%, #00f0ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 18px;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.0rem, 2vw, 1.18rem);
+      color: var(--text-dim);
+      max-width: 740px;
+      margin: 0 auto 16px;
+      line-height: 1.7;
+    }
+
+    .hero-author {
+      font-size: 0.95rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 28px;
+    }
+    .hero-author span {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* Metric Chips */
+    .metrics-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .metric-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    }
+    .metric-chip b {
+      color: var(--accent-cyan);
+    }
+
+    /* ── 7. Primary Video Section ────────────────────────────── */
+    .video-section {
+      margin-bottom: 72px;
+    }
+
+    .video-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border-bright);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow:
+        0 0 0 1px rgba(96, 165, 250, 0.08),
+        0 24px 70px rgba(0, 0, 0, 0.65),
+        0 0 90px rgba(0, 240, 255, 0.08);
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .video-card:hover {
+      border-color: rgba(0, 240, 255, 0.55);
+      box-shadow:
+        0 0 0 1px rgba(0, 240, 255, 0.15),
+        0 30px 85px rgba(0, 0, 0, 0.75),
+        0 0 110px rgba(0, 240, 255, 0.14);
+    }
+
+    .video-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent-cyan) 30%, var(--accent) 70%, transparent 100%);
+      z-index: 4;
+    }
+
+    .video-titlebar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px;
+      background: var(--surface-card);
+      border-bottom: 1px solid var(--border);
+      user-select: none;
+    }
+    .tl-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tl-red    { background: #ef4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.4); }
+    .tl-yellow { background: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.4); }
+    .tl-green  { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+    .tl-title {
+      margin: 0 auto;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #020408;
+      overflow: hidden;
+    }
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      background: #000;
+    }
+
+    .video-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 20px;
+      background: var(--surface-card);
+      border-top: 1px solid var(--border);
+      font-size: 0.80rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .vc-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dim);
+    }
+
+    /* ── 8. Section Headings ──────────────────────────────────── */
+    .section-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .section-tag {
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent-cyan);
+      margin-bottom: 8px;
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .section-title span {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .section-desc {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 680px;
+      margin: 10px auto 0;
+    }
+
+    /* ── 9. Problem Cards Grid (The 6 Benchmark Cases) ────────── */
+    .problems-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 24px;
+      margin-bottom: 76px;
+    }
+
+    .problem-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 26px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+    .problem-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-bright);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 30px rgba(59, 130, 246, 0.10);
+    }
+
+    .card-top {
+      margin-bottom: 18px;
+    }
+    .card-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .problem-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+    }
+    .problem-category {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .problem-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.22rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+    .problem-app {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.82rem;
+      color: var(--accent-amber);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .problem-app svg {
+      width: 14px; height: 14px; fill: currentColor; flex-shrink: 0;
+    }
+
+    .problem-body {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .param-list {
+      background: rgba(6, 8, 18, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.77rem;
+      color: var(--muted);
+    }
+    .param-list div {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.04);
+    }
+    .param-list div:last-child {
+      border-bottom: none;
+    }
+    .param-list span:last-child {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .card-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.78rem;
+    }
+    .verdict-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--accent-emerald);
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* ── 10. Methodology & Solver Architecture ───────────────── */
+    .arch-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 44px 36px;
+      margin-bottom: 76px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+    .arch-step {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 24px 20px;
+      text-align: left;
+    }
+    .step-badge {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-cyan));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 14px var(--glow-blue);
+    }
+    .arch-step h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .arch-step p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* ── 11. Footer ──────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 36px 20px;
+      text-align: center;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    footer a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+      transition: color var(--transition);
+    }
+    footer a:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    /* ── 12. Animations & Responsive ─────────────────────────── */
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 48px 0 32px; }
+      .problems-grid { grid-template-columns: 1fr; }
+      .arch-section { padding: 32px 20px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Ambient Floating Orbs -->
+  <div class="orb orb-1" aria-hidden="true"></div>
+  <div class="orb orb-2" aria-hidden="true"></div>
+  <div class="orb orb-3" aria-hidden="true"></div>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       HEADER & HERO
+  ══════════════════════════════════════════════════════════════ -->
+  <header>
+    <div class="page">
+      <section class="hero" aria-labelledby="main-title">
+        
+        <div class="badge" aria-label="Coursework benchmark suite">
+          <span class="badge-dot"></span>
+          Structural Analysis Coursework · Problem Set Suite
+        </div>
+
+        <h1 id="main-title" class="hero-title">
+          Advanced Beam Solver<br />Real-World Problem Set
+        </h1>
+
+        <p class="hero-subtitle">
+          Engineering analysis of complex boundary conditions and multi-physics load cases — covering Variable Flexural Rigidity, Elastic Spring Isolators, Support Consolidation, Thermal Gradients, Fabrication Tolerances, and Coupled Axial + Bending.
+        </p>
+
+        <p class="hero-author">
+          <em>Engineered by</em> VENKATA SUBRAMANIAN M <span>&middot; Structural Analysis &amp; CAE Platform</span>
+        </p>
+
+        <div class="metrics-bar">
+          <div class="metric-chip"><span>📚</span> <b>6 Benchmark Cases</b></div>
+          <div class="metric-chip"><span>⚡</span> <b>FEM 3-DOF Formulation</b></div>
+          <div class="metric-chip"><span>🎯</span> <b>100% Superposition Verified</b></div>
+          <div class="metric-chip"><span>📊</span> <b>Live SFD / BMD / AFD Curves</b></div>
+        </div>
+
+      </section>
+    </div>
+  </header>
+
+  <main>
+    <div class="page">
+
+      <!-- ═════════════════════════════════════════════════════════
+           PRIMARY FEATURE: VIDEO DEMO PLAYER
+      ══════════════════════════════════════════════════════════ -->
+      <section class="video-section" aria-label="Problem set demo walkthrough video">
+        <div class="video-card">
+          
+          <!-- macOS Window Title Bar -->
+          <div class="video-titlebar">
+            <span class="tl-dot tl-red"></span>
+            <span class="tl-dot tl-yellow"></span>
+            <span class="tl-dot tl-green"></span>
+            <span class="tl-title">Advanced Beam Solver · Comprehensive Problem Walkthrough</span>
+          </div>
+
+          <!-- Video Wrapper -->
+          <div class="video-wrapper">
+            <video
+              id="advanced-demo-video"
+              controls
+              playsinline
+              preload="metadata"
+            >
+              <!-- Primary requested video sources -->
+              <source src="Advanced beam problem.mov" type="video/quicktime" />
+              <source src="Advanced%20beam%20problem.mov" type="video/quicktime" />
+              <source src="Advanced-beam-problem.mov" type="video/quicktime" />
+              <source src="Advanced beam problem.mp4" type="video/mp4" />
+              <source src="Advanced-beam-problem.mp4" type="video/mp4" />
+              
+              <!-- Fallback message -->
+              <p style="padding:40px;text-align:center;color:#8fa3bf;font-family:Inter,sans-serif">
+                Your browser does not support HTML5 video. Please download 
+                <a href="Advanced beam problem.mov" style="color:#00f0ff">Advanced beam problem.mov</a>.
+              </p>
+            </video>
+          </div>
+
+          <!-- Caption Strip -->
+          <div class="video-caption">
+            <div class="vc-left">
+              <span class="badge-dot"></span>
+              <b>Live Demonstration:</b> Full 6-Problem Mechanical &amp; Structural Solver Execution
+            </div>
+            <div>Multi-Segment EI &bull; Springs &bull; Settlement &bull; Thermal &bull; Axial-Bending</div>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ═════════════════════════════════════════════════════════
+           PROBLEM BENCHMARK SHOWCASE (THE 6 PROBLEMS)
+      ══════════════════════════════════════════════════════════ -->
+      <section class="problems-section" aria-labelledby="showcase-title">
+        
+        <div class="section-header">
+          <span class="section-tag">Case Study Portfolio</span>
+          <h2 id="showcase-title" class="section-title">The 6 <span>Advanced Problems</span></h2>
+          <p class="section-desc">
+            Direct mapping between real-world industrial mechanical systems and rigorous structural mechanics formulations.
+          </p>
+        </div>
+
+        <div class="problems-grid">
+
+          <!-- PROBLEM 01 -->
+          <article class="problem-card">
+            <div class="card-top">
+              <div class="card-header-row">
+                <span class="problem-num">Problem 01</span>
+                <span class="problem-category">Discontinuous EI</span>
+              </div>
+              <h3 class="problem-title">Multi-Segment Stepped Shaft</h3>
+              <div class="problem-app">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Gearbox Output Transmission Shaft
+              </div>
+              <p class="problem-body">
+                A 12 m stepped transmission shaft with 3 discrete diameters (250 mm, 180 mm, 140 mm) experiencing distinct self-weight UDLs and a 600 N spur gear radial mesh point load at x = 5 m.
+              </p>
+              <div class="param-list">
+                <div><span>Total Span (L):</span> <span>12.00 m</span></div>
+                <div><span>Flexural Rigidity:</span> <span>3×, 2×, 1× EI_ref</span></div>
+                <div><span>Reference EI:</span> <span>80,000 kN·m²</span></div>
+                <div><span>Gear Radial Load:</span> <span>600 N @ x = 5.0 m</span></div>
+                <div><span>Self-Weight UDL:</span> <span>3.71, 1.96, 1.19 kN/m</span></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span>Boundary: <b>Simply Supported</b></span>
+              <span class="verdict-tag">✓ VERIFIED</span>
+            </div>
+          </article>
+
+          <!-- PROBLEM 02 -->
+          <article class="problem-card">
+            <div class="card-top">
+              <div class="card-header-row">
+                <span class="problem-num">Problem 02</span>
+                <span class="problem-category">Elastic Restraints</span>
+              </div>
+              <h3 class="problem-title">Elastic Restraints &amp; Springs</h3>
+              <div class="problem-app">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Cantilever Pump Frame with Isolator
+              </div>
+              <p class="problem-body">
+                A 6 m steel cantilever rigidly fixed at Support A, supported by an auxiliary vertical vibration spring isolator at x = 4 m, and flexible rotational end bracket at x = 6 m under 40 kN/m motor load.
+              </p>
+              <div class="param-list">
+                <div><span>Span (L):</span> <span>6.00 m</span></div>
+                <div><span>Translational Spring (k):</span> <span>500 kN/m @ 4.0 m</span></div>
+                <div><span>Rotational Spring (kθ):</span> <span>2,000 kN·m/rad @ 6.0 m</span></div>
+                <div><span>Equipment UDL:</span> <span>40 kN/m (x = 5 to 6 m)</span></div>
+                <div><span>Boundary at A:</span> <span>Rigid Fixed</span></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span>DOF Restraints: <b>Trans + Rot Springs</b></span>
+              <span class="verdict-tag">✓ VERIFIED</span>
+            </div>
+          </article>
+
+          <!-- PROBLEM 03 -->
+          <article class="problem-card">
+            <div class="card-top">
+              <div class="card-header-row">
+                <span class="problem-num">Problem 03</span>
+                <span class="problem-category">Imposed Displacement</span>
+              </div>
+              <h3 class="problem-title">Support Settlement</h3>
+              <div class="problem-app">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                3-Pier Highway Bridge Consolidation
+              </div>
+              <p class="problem-body">
+                Continuous 2-span highway bridge girder over 3 piers (A, B, C). Interior pier B experiences a differential long-term foundation settlement of Δ = 20 mm under 20 kN/m continuous traffic load.
+              </p>
+              <div class="param-list">
+                <div><span>Span Configuration:</span> <span>2 × 6.0 m (12.0 m)</span></div>
+                <div><span>Flexural Rigidity (EI):</span> <span>50,000 kN·m²</span></div>
+                <div><span>Imposed Settlement (Δ):</span> <span>20 mm downward @ B</span></div>
+                <div><span>Traffic Loading:</span> <span>20.0 kN/m UDL</span></div>
+                <div><span>Moment Shift:</span> <span>Hogging Redistribution</span></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span>Boundary: <b>3-Span Continuous</b></span>
+              <span class="verdict-tag">✓ VERIFIED</span>
+            </div>
+          </article>
+
+          <!-- PROBLEM 04 -->
+          <article class="problem-card">
+            <div class="card-top">
+              <div class="card-header-row">
+                <span class="problem-num">Problem 04</span>
+                <span class="problem-category">Thermal Multi-Physics</span>
+              </div>
+              <h3 class="problem-title">Thermal Gradients &amp; Prestrains</h3>
+              <div class="problem-app">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Bridge Girder under Solar Heating
+              </div>
+              <p class="problem-body">
+                A 10 m fixed-fixed girder subjected to differential top-to-bottom solar heating (+60°C / +27°C) over x = 2 to 7 m, an axial elongation prestrain zone (ε₀ = +0.0008), and a 50 kN central point load.
+              </p>
+              <div class="param-list">
+                <div><span>Span (L) &amp; Depth (h):</span> <span>10.0 m | 600 mm</span></div>
+                <div><span>Thermal Gradient:</span> <span>+60°C Top / +27°C Bot</span></div>
+                <div><span>Prestrain (ε₀):</span> <span>+0.0008 (x = 0 to 4 m)</span></div>
+                <div><span>Mechanical Load:</span> <span>50 kN @ x = 5.0 m</span></div>
+                <div><span>Thermal Expansion (α):</span> <span>1.2 × 10⁻⁵ /°C</span></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span>Boundary: <b>Fixed-Fixed</b></span>
+              <span class="verdict-tag">✓ VERIFIED</span>
+            </div>
+          </article>
+
+          <!-- PROBLEM 05 -->
+          <article class="problem-card">
+            <div class="card-top">
+              <div class="card-header-row">
+                <span class="problem-num">Problem 05</span>
+                <span class="problem-category">Residual Stress</span>
+              </div>
+              <h3 class="problem-title">Fabrication Prestrains &amp; Tolerances</h3>
+              <div class="problem-app">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Welded Machine Base Cooling Shrinkage
+              </div>
+              <p class="problem-body">
+                A 5 m fixed-fixed machine frame member subjected to uniform weld shrinkage prestrain ε₀ = -0.001. Solves the locked-in axial restraint reaction forces without external transverse loads.
+              </p>
+              <div class="param-list">
+                <div><span>Span (L):</span> <span>5.00 m</span></div>
+                <div><span>Axial Rigidity (EA):</span> <span>908,800 kN</span></div>
+                <div><span>Flexural Rigidity (EI):</span> <span>4,612 kN·m²</span></div>
+                <div><span>Uniform Prestrain (ε₀):</span> <span>-0.001 (Compression)</span></div>
+                <div><span>Induced Axial Restraint:</span> <span>908.8 kN Locked-in</span></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span>State: <b>Pure Axial Restraint</b></span>
+              <span class="verdict-tag">✓ VERIFIED</span>
+            </div>
+          </article>
+
+          <!-- PROBLEM 06 -->
+          <article class="problem-card">
+            <div class="card-top">
+              <div class="card-header-row">
+                <span class="problem-num">Problem 06</span>
+                <span class="problem-category">Superposition</span>
+              </div>
+              <h3 class="problem-title">Combined Axial + Bending</h3>
+              <div class="problem-app">
+                <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                Tractor PTO Structural Test Rig
+              </div>
+              <p class="problem-body">
+                Fixed-fixed girder simultaneously loaded by a 25 kN midspan tractor weight UDL (w = 6.25 kN/m over 4 m) and a 10 kN hydraulic actuator tensile axial pull applied at x = 1.0 m.
+              </p>
+              <div class="param-list">
+                <div><span>Span (L) &amp; Rigidity:</span> <span>8.0 m | EI = 67,500 kN·m²</span></div>
+                <div><span>Transverse UDL (W):</span> <span>25.0 kN (x = 2 to 6 m)</span></div>
+                <div><span>Axial Tension (P_ax):</span> <span>10.0 kN @ x = 1.0 m</span></div>
+                <div><span>Support Moments:</span> <span>MA = MB = -22.92 kN·m</span></div>
+                <div><span>Euler Ratio (P/Pcr):</span> <span>0.024% (Superposition OK)</span></div>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span>Boundary: <b>Fixed-Fixed 3-DOF</b></span>
+              <span class="verdict-tag">✓ VERIFIED</span>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+
+      <!-- ═════════════════════════════════════════════════════════
+           SOLVER ARCHITECTURE
+      ══════════════════════════════════════════════════════════ -->
+      <section class="arch-section" aria-labelledby="arch-title">
+        <div class="section-header" style="margin-bottom:20px;">
+          <span class="section-tag">Decoupled Engineering Pipeline</span>
+          <h2 id="arch-title" class="section-title">How the Solver <span>Executes</span></h2>
+        </div>
+
+        <div class="arch-grid">
+          <div class="arch-step">
+            <div class="step-badge">01</div>
+            <h4>Input &amp; Visual CAD</h4>
+            <p>Direct canvas placement or NLP parsing creates strict geometric representations with exact boundary conditions.</p>
+          </div>
+
+          <div class="arch-step">
+            <div class="step-badge">02</div>
+            <h4>Model Validation</h4>
+            <p>Pydantic schemas check topological stability, stiffness matrix conditioning, and rigid-body modes before solve.</p>
+          </div>
+
+          <div class="arch-step">
+            <div class="step-badge">03</div>
+            <h4>3-DOF FEM Engine</h4>
+            <p>Coupled global stiffness assembly [K]{u} = {F} incorporating axial (ux), transverse (uy), and rotational (θz) degrees of freedom.</p>
+          </div>
+
+          <div class="arch-step">
+            <div class="step-badge">04</div>
+            <h4>Stress &amp; Visual Diagrams</h4>
+            <p>Continuous integration for SFD, BMD, AFD, elastic deflection curves, and combined fiber stress distribution σ = N/A ± My/I.</p>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /.page -->
+  </main>
+
+  <!-- ═════════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════════ -->
+  <footer>
+    <div class="page">
+      <p style="margin-bottom: 8px;">
+        <strong>Advanced Beam Solver Problem Set</strong> &bull; Finite Element &amp; Structural Mechanics Platform
+      </p>
+      <p>
+        Engineered &amp; Designed by <a href="https://www.linkedin.com/in/venkata-subramanian-m-412353201/" target="_blank" rel="noopener noreferrer">Venkata Subramanian M</a> &ensp;&bull;&ensp; &copy; 2026 All Rights Reserved
+      </p>
+    </div>
+  </footer>
+
+  <!-- Minimal vanilla helper for video error handling -->
+  <script>
+    (function() {
+      'use strict';
+      var video = document.getElementById('advanced-demo-video');
+      if (video) {
+        video.addEventListener('error', function() {
+          var wrapper = video.closest('.video-wrapper');
+          if (!wrapper) return;
+          var fallback = document.createElement('div');
+          fallback.setAttribute('role', 'alert');
+          fallback.style.cssText = 'display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;padding:48px 24px;text-align:center;color:#8fa3bf;font-family:Inter,sans-serif;height:100%;';
+          fallback.innerHTML = '<span style="font-size:2.6rem">&#127909;</span>' +
+            '<strong style="color:#f3f6ff;font-size:1.05rem">Video Preview Standby</strong>' +
+            '<span style="font-size:0.85rem">Place <code style="background:rgba(59,130,246,0.15);padding:3px 8px;border-radius:5px;font-family:JetBrains Mono,monospace;color:#00f0ff">Advanced beam problem.mov</code> in the directory to enable live playback.</span>';
+          wrapper.replaceChild(fallback, video);
+        });
+      }
+    })();
+  </script>
+
+</body>
+</html>
